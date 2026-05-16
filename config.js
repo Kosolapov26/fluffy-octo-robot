@@ -7,9 +7,14 @@ const SITE_CONFIG = {
 function getPlayerUrl(kpId, imdbId, tmdbId, type) {
     let idValue = '';
     switch(type) {
-        case 'imdb': idValue = imdbId; break;
-        case 'tmdb': idValue = `tmdb${tmdbId}`; break;
-        default: idValue = imdbId;
+        case 'imdb':
+            idValue = imdbId;
+            break;
+        case 'tmdb':
+            idValue = `tmdb${tmdbId}`;
+            break;
+        default:
+            idValue = imdbId;
     }
     return `${SITE_CONFIG.PLAYER_DOMAIN}/embed_auto/${idValue}/?token=${SITE_CONFIG.PLAYER_TOKEN}`;
 }

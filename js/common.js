@@ -44,5 +44,4 @@ function renderMovies() {
     `).join('');
 }
 
-// Запуск рендера при загрузке страницы
 document.addEventListener('DOMContentLoaded', renderMovies);

@@ -163,7 +163,6 @@ body {
     margin-top: 8px;
 }
 
-/* Страница фильма */
 .back-btn {
     padding: 8px 20px;
     background: #2a2f4a;
@@ -217,7 +216,6 @@ body {
     background: linear-gradient(45deg, #ff6b6b, #ff8e53);
 }
 
-/* Сезоны и серии */
 .seasons-container {
     margin-top: 30px;
     padding: 20px;
@@ -261,6 +259,20 @@ body {
     max-height: 350px;
     overflow-y: auto;
     padding: 5px;
+}
+
+.episodes-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.episodes-grid::-webkit-scrollbar-track {
+    background: #2a2f4a;
+    border-radius: 10px;
+}
+
+.episodes-grid::-webkit-scrollbar-thumb {
+    background: #ff6b6b;
+    border-radius: 10px;
 }
 
 .episode-btn {
