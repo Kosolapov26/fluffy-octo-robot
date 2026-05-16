@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузка... | KinoGorilla</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/player.js"></script>
+</head>
+<body>
+
+<div class="header">
+    <div class="nav">
+        <a href="index.html" class="logo">🦍 KinoGorilla</a>
+        <a href="index.html" class="back-btn">← На главную</a>
+    </div>
+</div>
+
+<div class="container" id="container">
+    <div class="loader">🎬 Загрузка информации...</div>
+</div>
+
+<div class="footer">
+    <p>🦍 KinoGorilla — лучшие фильмы и сериалы в HD качестве</p>
+</div>
+
+<script>
+    // Получаем параметры из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const movieId = urlParams.get('id');
+    const movieType = urlParams.get('type');
+
+    let currentMovie = null;
+    let currentType = 'imdb';
+
+    async function loadMovie() {
+        if (!movieId) {
+            document.getElementById('container').innerHTML = `
+                <div class="loader" style="color:#ff6b6b;">
+                    ❌ Ошибка: ID фильма не указан<br>
+                    <a href="index.html" style="color:#ff8e53;">Вернуться на главную</a>
+                </div>
+            `;
+            return;
+        }
+
+        const movie = await fetchMovieById(movieId, movieType || 'movie');
+        
+        if (!movie) {
+            document.getElementById('container').innerHTML = `
+                <div class="loader" style="color:#ff6b6b;">
+                    ❌ Фильм не найден<br>
+                    <a href="index.html" style="color:#ff8e53;">Вернуться на главную</a>
+                </div>
+            `;
+            return;
+        }
+
+        currentMovie = movie;
+        
+        // Обновляем title и meta-теги
+        document.title = `${movie.title} (${movie.year}) смотреть онлайн | KinoGorilla`;
+        
+        // Рендерим страницу
+        renderMoviePage(movie);
+        
+        // Загружаем плеер
+        loadPlayer(movie.kp_id, movie.imdb_id, movie.tmdb_id);
+    }
+
+    function renderMoviePage(movie) {
+        const isSeries = movie.type === 'series';
+        const posterUrl = movie.poster || `https://via.placeholder.com/300x450/2a2f4a/ffffff?text=${encodeURIComponent(movie.title)}`;
+        
+        let html = `
+            <!-- ПЛЕЕР -->
+            <div class="player-container" id="playerContainer">
+                <div class="loader">🎬 Загрузка плеера...</div>
+            </div>
+
+            <!-- ВЫБОР ПЛЕЕРА (ПОД ПЛЕЕРОМ) -->
+            <div class="player-selector">
+                <strong>🎮 Выберите плеер:</strong>
+                <button class="player-btn active" data-player="0" onclick="switchPlayer(0, '${movie.kp_id}', '${movie.imdb_id}', '${movie.tmdb_id}')">🎥 Плеер 1 (IMDB)</button>
+                <button class="player-btn" data-player="1" onclick="switchPlayer(1, '${movie.kp_id}', '${movie.imdb_id}', '${movie.tmdb_id}')">📺 Плеер 2 (TMDB)</button>
+            </div>
+
+            <!-- ИНФОРМАЦИЯ О ФИЛЬМЕ/СЕРИАЛЕ -->
+            <div style="display: flex; gap: 30px; margin: 30px 0; flex-wrap: wrap;">
+                <div style="width: 200px; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <img src="${posterUrl}" alt="${movie.title}" style="width: 100%; height: auto; display: block;" onerror="this.src='https://via.placeholder.com/300x450/2a2f4a/ffffff?text=No+Poster'">
+                </div>
+                <div style="flex: 1;">
+                    <h1 style="font-size: 32px; margin-bottom: 10px;">${movie.title} <span style="font-size: 18px; color: #ff8e53;">(${movie.year})</span></h1>
+                    <div style="margin: 15px 0;">
+                        <span style="background: #2a2f4a; padding: 5px 12px; border-radius: 20px; margin-right: 10px;">${isSeries ? '📺 Сериал' : '🎬 Фильм'}</span>
+                        ${movie.seasons ? `<span style="background: #2a2f4a; padding: 5px 12px; border-radius: 20px; margin-right: 10px;">📅 ${movie.seasons} сезонов</span>` : ''}
+                    </div>
+                    <p style="line-height: 1.6;">${movie.description}</p>
+                </div>
+            </div>
+        `;
+        
+        // Для сериалов добавляем выбор сезонов и серий
+        if (isSeries && movie.seasons) {
+            html += `
+                <div id="seasonsContainer"></div>
+                <div id="currentEpisodeInfo" class="current-episode-info">🎬 Выберите сезон и серию</div>
+            `;
+        }
+        
+        document.getElementById('container').innerHTML = html;
+        
+        // Если сериал, рендерим сезоны
+        if (isSeries && movie.seasons) {
+            renderSeasonsForMovie(movie);
+        }
+    }
+
+    function renderSeasonsForMovie(movie) {
+        // Для реальных сериалов нужно загрузить данные о сезонах из API
+        // Это упрощенная версия для демонстрации
+        const container = document.getElementById('seasonsContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="seasons-container">
+                    <h3 class="seasons-title">📺 Выберите сезон и серию</h3>
+                    <div class="season-tabs">
+                        <button class="season-btn active" onclick="alert('Для реального сериала здесь будут сезоны. В демо-режиме используйте плеер выше.')">Сезон 1</button>
+                    </div>
+                    <div class="episodes-grid">
+                        <button class="episode-btn" onclick="alert('Выберите серию в плеере выше')">Серия 1</button>
+                        <button class="episode-btn" onclick="alert('Выберите серию в плеере выше')">Серия 2</button>
+                        <button class="episode-btn" onclick="alert('Выберите серию в плеере выше')">Серия 3</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Запускаем загрузку
+    loadMovie();
+</script>
+
+</body>
+</html>
