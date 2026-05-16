@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ходячие мертвецы (2010) смотреть онлайн | KinoGorilla</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
+</head>
+<body>
+
+<div class="header">
+    <div class="nav">
+        <a href="index.html" class="logo">🦍 KinoGorilla</a>
+        <a href="index.html" class="back-btn">← На главную</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="player-container" id="playerContainer">
+        <div class="loader">🎬 Загрузка плеера...</div>
+    </div>
+
+    <h1 class="section-title">Ходячие мертвецы (2010)</h1>
+
+    <div class="player-selector">
+        <strong>🎮 Выберите плеер:</strong>
+        <button class="player-btn active" data-player="0" onclick="switchPlayer(0, '228165', 'tt1520211', '1402')">🎬 Плеер 1</button>
+        <button class="player-btn" data-player="1" onclick="switchPlayer(1, '228165', 'tt1520211', '1402')">🎥 Плеер 2</button>
+        <button class="player-btn" data-player="2" onclick="switchPlayer(2, '228165', 'tt1520211', '1402')">📺 Плеер 3</button>
+    </div>
+
+    <div id="seasonsContainer"></div>
+    <div id="currentEpisodeInfo" class="current-episode-info">🎬 Выберите сезон и серию</div>
+</div>
+
+<div class="footer">
+    <p>🦍 KinoGorilla — лучшие фильмы и сериалы в HD качестве</p>
+</div>
+
+<script src="player.js"></script>
+<script>
+    const TWD_KP = '228165';
+    const TWD_IMDB = 'tt1520211';
+    const TWD_TMDB = '1402';
+    const EPISODES = {1:6,2:13,3:16,4:16,5:16,6:16,7:16,8:16,9:16,10:22,11:24};
+    
+    let currentSeason = 1;
+    let currentEpisode = 1;
+    let currentType = 'kp';
+
+    function getSeriesUrl(season, episode, type) {
+        let id = '';
+        if (type === 'kp') id = TWD_KP;
+        else if (type === 'imdb') id = TWD_IMDB;
+        else id = `tmdb${TWD_TMDB}`;
+        return `${SITE_CONFIG.PLAYER_DOMAIN}/embed_auto/${id}/?token=${SITE_CONFIG.PLAYER_TOKEN}&video=s${season}v${episode}`;
+    }
+
+    function playEpisode(season, episode) {
+        currentSeason = season;
+        currentEpisode = episode;
+        const url = getSeriesUrl(season, episode, currentType);
+        document.getElementById('playerContainer').innerHTML = `<iframe src="${url}" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>`;
+        document.getElementById('currentEpisodeInfo').innerHTML = `🎬 Сейчас играет: ${season} сезон, ${episode} серия — «Ходячие мертвецы»`;
+        document.querySelectorAll('.episode-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.querySelector(`.episode-btn[data-episode="${episode}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function switchPlayer(idx, kp, imdb, tmdb) {
+        const types = ['kp', 'imdb', 'tmdb'];
+        currentType = types[idx];
+        playEpisode(currentSeason, currentEpisode);
+        document.querySelectorAll('.player-btn').forEach((btn, i) => {
+            if (i === idx) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
+    function renderSeasons() {
+        let html = `<div class="seasons-container"><h3 class="seasons-title">📺 Выберите сезон и серию</h3><div class="season-tabs">`;
+        for (let s = 1; s <= 11; s++) {
+            html += `<button class="season-btn ${s === 1 ? 'active' : ''}" onclick="selectSeason(${s})">Сезон ${s}</button>`;
+        }
+        html += `</div><div id="episodesList" class="episodes-grid"></div></div>`;
+        document.getElementById('seasonsContainer').innerHTML = html;
+        renderEpisodes(1);
+    }
+
+    function renderEpisodes(season) {
+        let html = '';
+        for (let i = 1; i <= EPISODES[season]; i++) {
+            html += `<button class="episode-btn ${i === 1 ? 'active' : ''}" data-episode="${i}" onclick="playEpisode(${season}, ${i})">Серия ${i}</button>`;
+        }
+        document.getElementById('episodesList').innerHTML = html;
+    }
+
+    function selectSeason(season) {
+        currentSeason = season;
+        document.querySelectorAll('.season-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        renderEpisodes(season);
+        playEpisode(season, 1);
+    }
+
+    renderSeasons();
+    playEpisode(1, 1);
+</script>
+
+</body>
+</html>
