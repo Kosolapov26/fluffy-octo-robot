@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KinoGorilla — смотреть фильмы и сериалы онлайн</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="header">
+    <div class="nav">
+        <a href="index.html" class="logo">🦍 KinoGorilla</a>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Поиск фильмов..." onkeyup="filterMovies()">
+        </div>
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Все</button>
+            <button class="filter-btn" data-filter="movie" onclick="setFilter('movie')">Фильмы</button>
+            <button class="filter-btn" data-filter="series" onclick="setFilter('series')">Сериалы</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h2 class="section-title">🔥 Популярное сегодня</h2>
+    <div id="moviesGrid" class="movies-grid">
+        <div class="loader">🎬 Загрузка...</div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>🦍 KinoGorilla — лучшие фильмы и сериалы в HD качестве</p>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+
+</body>
+</html>
