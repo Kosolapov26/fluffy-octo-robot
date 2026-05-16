@@ -35,12 +35,13 @@
 </div>
 
 <div class="container">
+    <!-- 1. ИНФОРМАЦИЯ О ФИЛЬМЕ (ВВЕРХУ) -->
     <div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">
-        <div style="width: 250px; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-            <img src="../images/barbie.jpg" alt="Барби" style="width: 100%; height: auto; display: block;" onerror="this.src='https://via.placeholder.com/250x375/ff69b4/ffffff?text=Barbie'">
+        <div style="width: 200px; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <img src="../images/barbie.jpg" alt="Барби" style="width: 100%; height: auto; display: block;" onerror="this.src='https://via.placeholder.com/200x300/ff69b4/ffffff?text=Barbie'">
         </div>
         <div style="flex: 1;">
-            <h1 class="section-title" style="margin-top: 0;">Барби <span style="font-size: 20px; color: #ff8e53;">(2023)</span></h1>
+            <h1 style="font-size: 32px; margin-bottom: 10px;">Барби <span style="font-size: 18px; color: #ff8e53;">(2023)</span></h1>
             <div style="margin: 15px 0;">
                 <span style="background: #2a2f4a; padding: 5px 12px; border-radius: 20px; margin-right: 10px;">🎬 1 ч 54 мин</span>
                 <span style="background: #2a2f4a; padding: 5px 12px; border-radius: 20px; margin-right: 10px;">⭐ Рейтинг: 7.2 / 10</span>
@@ -50,14 +51,16 @@
         </div>
     </div>
 
+    <!-- 2. ПЛЕЕР -->
+    <div class="player-container" id="playerContainer">
+        <div class="loader">🎬 Загрузка плеера...</div>
+    </div>
+
+    <!-- 3. ВЫБОР ПЛЕЕРА (ПОД ПЛЕЕРОМ) -->
     <div class="player-selector">
         <strong>🎮 Выберите плеер:</strong>
         <button class="player-btn active" data-player="0" onclick="switchPlayer(0, '974256', 'tt1517268', '346698')">🎥 Плеер 1 (IMDB)</button>
         <button class="player-btn" data-player="1" onclick="switchPlayer(1, '974256', 'tt1517268', '346698')">📺 Плеер 2 (TMDB)</button>
-    </div>
-
-    <div class="player-container" id="playerContainer">
-        <div class="loader">🎬 Загрузка плеера...</div>
     </div>
 </div>
 
