@@ -3,27 +3,45 @@
 const API_TOKEN = '367700083be0be7be1e8a30f47703c27';
 const API_URL = 'https://api.videoseed.tv/apiv2.php';
 
-// Глобальный массив для хранения загруженных фильмов
-let MOVIES_LIST = [];
+// Используем CORS-прокси для обхода блокировок
+const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
 
-// Загрузка фильмов из API
+async function fetchFromAPI(url) {
+    // Пробуем прямой запрос
+    try {
+        const response = await fetch(url);
+        if (response.ok) return await response.json();
+    } catch (e) {
+        console.log('Прямой запрос не удался, пробуем через прокси...');
+    }
+    
+    // Пробуем через прокси
+    try {
+        const proxyUrl = CORS_PROXY + url;
+        const response = await fetch(proxyUrl);
+        if (response.ok) return await response.json();
+    } catch (e) {
+        console.error('Оба способа не сработали:', e);
+    }
+    
+    return null;
+}
+
 async function fetchMoviesFromAPI() {
     try {
         console.log('🔄 Загрузка фильмов из API...');
         
-        // Загружаем фильмы и сериалы параллельно
-        const [moviesRes, seriesRes] = await Promise.all([
-            fetch(`${API_URL}?token=${API_TOKEN}&list=movie&from=1&items=20&sort_by=post_date%20desc`),
-            fetch(`${API_URL}?token=${API_TOKEN}&list=serial&from=1&items=20&sort_by=post_date%20desc`)
-        ]);
+        const moviesUrl = `${API_URL}?token=${API_TOKEN}&list=movie&from=1&items=20&sort_by=post_date%20desc`;
+        const seriesUrl = `${API_URL}?token=${API_TOKEN}&list=serial&from=1&items=20&sort_by=post_date%20desc`;
         
-        const moviesData = await moviesRes.json();
-        const seriesData = await seriesRes.json();
+        const [moviesData, seriesData] = await Promise.all([
+            fetchFromAPI(moviesUrl),
+            fetchFromAPI(seriesUrl)
+        ]);
         
         let allItems = [];
         
-        // Обрабатываем фильмы
-        if (moviesData.status === 'success' && moviesData.data) {
+        if (moviesData && moviesData.data) {
             const movies = moviesData.data.map(movie => ({
                 id: movie.id_kp || movie.id,
                 title: movie.name,
@@ -39,8 +57,7 @@ async function fetchMoviesFromAPI() {
             console.log(`✅ Загружено ${movies.length} фильмов`);
         }
         
-        // Обрабатываем сериалы
-        if (seriesData.status === 'success' && seriesData.data) {
+        if (seriesData && seriesData.data) {
             const series = seriesData.data.map(ser => ({
                 id: ser.id_kp || ser.id,
                 title: ser.name,
@@ -50,66 +67,50 @@ async function fetchMoviesFromAPI() {
                 imdb_id: ser.id_imdb,
                 tmdb_id: ser.id_tmdb,
                 poster: ser.poster,
-                description: ser.description || 'Описание отсутствует',
-                seasons: ser.seasons ? Object.keys(ser.seasons).length : 1
+                description: ser.description || 'Описание отсутствует'
             }));
             allItems.push(...series);
             console.log(`✅ Загружено ${series.length} сериалов`);
         }
         
-        // Сортируем по дате добавления (новые первые)
-        allItems.sort((a, b) => (b.year || 0) - (a.year || 0));
+        if (allItems.length === 0) {
+            console.warn('⚠️ API не вернул данные, используем локальную базу');
+            return getLocalMovies();
+        }
         
-        MOVIES_LIST = allItems;
-        console.log(`🎉 Всего загружено ${MOVIES_LIST.length} позиций`);
-        
-        return MOVIES_LIST;
+        return allItems;
         
     } catch (error) {
         console.error('❌ Ошибка загрузки из API:', error);
-        // Возвращаем пустой массив, чтобы показать ошибку пользователю
-        return [];
+        return getLocalMovies();
     }
 }
 
-// Поиск фильма по ID (для страницы фильма)
-async function fetchMovieById(id, type) {
-    try {
-        let url = '';
-        if (type === 'movie') {
-            url = `${API_URL}?token=${API_TOKEN}&item=movie&kp=${id}`;
-        } else {
-            url = `${API_URL}?token=${API_TOKEN}&item=serial&kp=${id}`;
-        }
-        
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.status === 'success' && data.data && data.data[0]) {
-            const item = data.data[0];
-            return {
-                id: item.id_kp || item.id,
-                title: item.name,
-                year: item.year,
-                type: type,
-                kp_id: item.id_kp,
-                imdb_id: item.id_imdb,
-                tmdb_id: item.id_tmdb,
-                poster: item.poster,
-                description: item.description || 'Описание отсутствует',
-                seasons: item.seasons ? Object.keys(item.seasons).length : null
-            };
-        }
-        return null;
-    } catch (error) {
-        console.error('Ошибка загрузки фильма:', error);
-        return null;
-    }
-}
-
-// Демо-данные на случай, если API не работает
-function getDemoMovies() {
+// Локальная база (резерв)
+function getLocalMovies() {
     return [
+        {
+            id: "barbie-2023",
+            title: "Барби",
+            year: "2023",
+            type: "movie",
+            kp_id: "974256",
+            imdb_id: "tt1517268",
+            tmdb_id: "346698",
+            poster: "https://via.placeholder.com/300x450/ff69b4/ffffff?text=Barbie",
+            description: "Фэнтези-комедия о культовой кукле."
+        },
+        {
+            id: "oppenheimer-2023",
+            title: "Оппенгеймер",
+            year: "2023",
+            type: "movie",
+            kp_id: "4664634",
+            imdb_id: "tt15398776",
+            tmdb_id: "872585",
+            poster: "https://via.placeholder.com/300x450/333333/ffffff?text=Oppenheimer",
+            description: "История создателя атомной бомбы."
+        },
         {
             id: "walking-dead",
             title: "Ходячие мертвецы",
@@ -119,7 +120,7 @@ function getDemoMovies() {
             imdb_id: "tt1520211",
             tmdb_id: "1402",
             poster: "https://via.placeholder.com/300x450/2F4F4F/ffffff?text=Walking+Dead",
-            description: "Культовый постапокалиптический сериал о выживании в мире зомби."
+            description: "Культовый постапокалиптический сериал."
         }
     ];
 }

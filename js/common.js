@@ -2,30 +2,6 @@
 
 let currentFilter = 'all';
 let currentSearch = '';
-let isLoading = true;
-
-async function init() {
-    // Показываем загрузку
-    const grid = document.getElementById('moviesGrid');
-    grid.innerHTML = '<div class="loader">🎬 Загрузка фильмов из API...</div>';
-    
-    // Загружаем фильмы из API
-    await fetchMoviesFromAPI();
-    
-    // Если API не вернул данных, используем демо
-    if (MOVIES_LIST.length === 0) {
-        console.log('⚠️ API не вернул данных, используем демо-режим');
-        MOVIES_LIST = getDemoMovies();
-        grid.innerHTML = '<div class="loader">⚠️ Демо-режим (API недоступен)</div>';
-        setTimeout(() => {
-            renderMovies();
-        }, 1000);
-    } else {
-        renderMovies();
-    }
-    
-    isLoading = false;
-}
 
 function filterMovies() {
     currentSearch = document.getElementById('searchInput').value.toLowerCase();
@@ -42,8 +18,6 @@ function setFilter(filter) {
 }
 
 function renderMovies() {
-    if (isLoading) return;
-    
     let filtered = MOVIES_LIST.filter(m => {
         if (currentFilter !== 'all' && m.type !== currentFilter) return false;
         if (currentSearch && !m.title.toLowerCase().includes(currentSearch)) return false;
@@ -56,24 +30,18 @@ function renderMovies() {
         return;
     }
 
-    grid.innerHTML = filtered.map(movie => {
-        // Генерируем URL для страницы фильма
-        const movieUrl = `movie.html?id=${movie.kp_id}&type=${movie.type}`;
-        
-        return `
-            <a href="${movieUrl}" class="movie-card">
-                <div class="movie-poster" style="background-image: url('${movie.poster || 'https://via.placeholder.com/300x450/2a2f4a/ffffff?text=No+Poster'}')">
-                    <div class="play-overlay">▶</div>
-                </div>
-                <div class="movie-info">
-                    <div class="movie-title">${movie.title}</div>
-                    <div class="movie-year">${movie.year}</div>
-                    <div class="movie-type">${movie.type === 'movie' ? '🎬 Фильм' : '📺 Сериал'}</div>
-                </div>
-            </a>
-        `;
-    }).join('');
+    grid.innerHTML = filtered.map(movie => `
+        <a href="movies/${movie.id}.html" class="movie-card">
+            <div class="movie-poster" style="background-image: url('${movie.poster}')">
+                <div class="play-overlay">▶</div>
+            </div>
+            <div class="movie-info">
+                <div class="movie-title">${movie.title}</div>
+                <div class="movie-year">${movie.year}</div>
+                <div class="movie-type">${movie.type === 'movie' ? '🎬 Фильм' : '📺 Сериал'}</div>
+            </div>
+        </a>
+    `).join('');
 }
 
-// Запускаем инициализацию
-init();
+document.addEventListener('DOMContentLoaded', renderMovies);
